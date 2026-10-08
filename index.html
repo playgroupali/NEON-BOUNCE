@@ -80,8 +80,9 @@
         const highDisplay = document.getElementById('highScoreVal');
 
         let gameState = "MENU"; let score = 0; let highScore = 0; let animationFrameId;
-        const player = { x: 0, y: 0, radius: 10, targetX: 0, vy: 0 };
-        let steps = []; let baseSpeed = 3.5; let spawnTimer = 0;
+        // ADJUSTED: Re-tuned baseline gravity and radius coordinates points
+        const player = { x: 0, y: 0, radius: 11, targetX: 0, vy: 0 };
+        let steps = []; let baseSpeed = 2.4; let spawnTimer = 0;
 
         function dynamicallyScaleGameCanvas() {
             canvas.width = arena.clientWidth * window.devicePixelRatio;
@@ -119,11 +120,12 @@
             dynamicallyScaleGameCanvas();
             overlay.style.display = 'none';
             gameState = "PLAYING"; score = 0; scoreDisplay.innerText = score;
-            steps = []; baseSpeed = 3.5; spawnTimer = 0;
+            steps = []; baseSpeed = 2.4; spawnTimer = 0;
             const currentW = canvas.width / window.devicePixelRatio;
             const currentH = canvas.height / window.devicePixelRatio;
             player.x = currentW / 2; player.targetX = currentW / 2; player.vy = 0; player.y = currentH / 3;
-            steps.push({ x: currentW / 2 - 40, y: currentH / 2, width: 80, height: 12, isTrap: false });
+            // ADJUSTED: Swapped launch pads to give you a significantly wider starting platform zone frame
+            steps.push({ x: currentW / 2 - 55, y: currentH / 2, width: 110, height: 12, isTrap: false });
             cancelAnimationFrame(animationFrameId);
             gameLoopEngineTick();
         }
@@ -132,7 +134,7 @@
             gameState = "GAMEOVER"; cancelAnimationFrame(animationFrameId);
             if (score > highScore) { highScore = score; highDisplay.innerText = highScore; localStorage.setItem('hs_neon_bounce_isolated', highScore.toString()); }
             menuTitle.innerText = "MISSION FAILED"; menuTitle.style.background = "linear-gradient(135deg, #ef4444, #fca5a5)"; menuTitle.style.webkitBackgroundClip = "text";
-            menuDesc.innerText = `You fell into the void!\nFinal Score: ${score}`; startBtn.innerText = "Try Again"; overlay.style.display = 'flex';
+            menuDesc.innerText = `Final Score: ${score}`; startBtn.innerText = "Try Again"; overlay.style.display = 'flex';
         }
 
         function gameLoopEngineTick() {
@@ -148,11 +150,13 @@
 
             if (isNaN(player.x)) player.x = w / 2;
             player.x += (player.targetX - player.x) * 0.25;
-            player.vy += 0.35; player.y += player.vy;
+            // ADJUSTED: Softened gravity drop down ratios for floatier handling
+            player.vy += 0.28; player.y += player.vy;
 
-            if (spawnTimer % 50 === 0) {
-                let stepWidth = Math.max(55, 80 - score * 0.3);
-                steps.push({ x: Math.random() * (w - stepWidth), y: -15, width: stepWidth, height: 12, isTrap: Math.random() < 0.22 && score > 8 });
+            if (spawnTimer % 55 === 0) {
+                // ADJUSTED: Made stair width parameters notably wider and more forgiving
+                let stepWidth = Math.max(70, 95 - score * 0.25);
+                steps.push({ x: Math.random() * (w - stepWidth), y: -15, width: stepWidth, height: 12, isTrap: Math.random() < 0.18 && score > 12 });
             }
 
             for (let i = steps.length - 1; i >= 0; i--) {
@@ -162,8 +166,9 @@
 
                 if (player.vy > 0 && player.x >= step.x && player.x <= step.x + step.width && player.y + player.radius >= step.y && player.y - player.radius <= step.y + step.height) {
                     if (step.isTrap) { triggerGameOverSequence(); return; }
-                    player.vy = -9.5; player.y = step.y - player.radius; score++; scoreDisplay.innerText = score;
-                    if (score % 10 === 0) baseSpeed += 0.3;
+                    // ADJUSTED: Re-engineered upward bounce force from -9.5 to -10.5 for premium airtime recovery frames
+                    player.vy = -10.5; player.y = step.y - player.radius; score++; scoreDisplay.innerText = score;
+                    if (score % 10 === 0) baseSpeed += 0.2;
                 }
                 if (step.y > h) steps.splice(i, 1);
             }
@@ -171,7 +176,7 @@
             ctx.fillStyle = styles.getPropertyValue('--text-main').trim();
             ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2); ctx.fill();
 
-            if (player.y - player.radius > h || player.y < -100) { triggerGameOverSequence(); return; }
+            if (player.y - player.radius > h || player.y < -120) { triggerGameOverSequence(); return; }
             animationFrameId = requestAnimationFrame(gameLoopEngineTick);
         }
     </script>
