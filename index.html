@@ -114,7 +114,8 @@
                 const currentWidth = canvas.width / window.devicePixelRatio;
                 const canvasTouchX = ((e.touches[0].clientX - rect.left) / rect.width) * currentWidth;
                 if (!isNaN(canvasTouchX)) {
-                    player.targetX = Math.min(Math.max(canvasTouchX, player.radius), currentWidth - player.radius);
+                    player.targetX = Math.min(Math.max(canvasTouchX, player.radius + 5), currentWidth - (player.radius + 5));
+
                 }
             }
         }
