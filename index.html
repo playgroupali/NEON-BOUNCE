@@ -80,7 +80,6 @@
         const highDisplay = document.getElementById('highScoreVal');
 
         let gameState = "MENU"; let score = 0; let highScore = 0; let animationFrameId;
-        // ADJUSTED: Re-tuned baseline gravity and radius coordinates points
         const player = { x: 0, y: 0, radius: 11, targetX: 0, vy: 0 };
         let steps = []; let baseSpeed = 2.4; let spawnTimer = 0;
 
@@ -124,7 +123,6 @@
             const currentW = canvas.width / window.devicePixelRatio;
             const currentH = canvas.height / window.devicePixelRatio;
             player.x = currentW / 2; player.targetX = currentW / 2; player.vy = 0; player.y = currentH / 3;
-            // ADJUSTED: Swapped launch pads to give you a significantly wider starting platform zone frame
             steps.push({ x: currentW / 2 - 55, y: currentH / 2, width: 110, height: 12, isTrap: false });
             cancelAnimationFrame(animationFrameId);
             gameLoopEngineTick();
@@ -150,11 +148,9 @@
 
             if (isNaN(player.x)) player.x = w / 2;
             player.x += (player.targetX - player.x) * 0.25;
-            // ADJUSTED: Softened gravity drop down ratios for floatier handling
             player.vy += 0.28; player.y += player.vy;
 
             if (spawnTimer % 55 === 0) {
-                // ADJUSTED: Made stair width parameters notably wider and more forgiving
                 let stepWidth = Math.max(70, 95 - score * 0.25);
                 steps.push({ x: Math.random() * (w - stepWidth), y: -15, width: stepWidth, height: 12, isTrap: Math.random() < 0.18 && score > 12 });
             }
@@ -166,8 +162,8 @@
 
                 if (player.vy > 0 && player.x >= step.x && player.x <= step.x + step.width && player.y + player.radius >= step.y && player.y - player.radius <= step.y + step.height) {
                     if (step.isTrap) { triggerGameOverSequence(); return; }
-                    // ADJUSTED: Re-engineered upward bounce force from -9.5 to -10.5 for premium airtime recovery frames
-                    player.vy = -10.5; player.y = step.y - player.radius; score++; scoreDisplay.innerText = score;
+                    // FIXED: Re-engineered upward bounce force from -10.5 to -12.5 for massive super-jumps [INDEX]
+                    player.vy = -12.5; player.y = step.y - player.radius; score++; scoreDisplay.innerText = score;
                     if (score % 10 === 0) baseSpeed += 0.2;
                 }
                 if (step.y > h) steps.splice(i, 1);
