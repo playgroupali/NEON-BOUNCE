@@ -81,7 +81,10 @@
 
         let gameState = "MENU"; let score = 0; let highScore = 0; let animationFrameId;
         const player = { x: 0, y: 0, radius: 11, targetX: 0, vy: 0 };
-        let steps = []; let baseSpeed = 2.4; let spawnTimer = 0;
+        let steps = []; 
+        // BALANCED: Perfect speed setting to catch the ball comfortably
+        let baseSpeed = 3.8; 
+        let spawnTimer = 0;
 
         function dynamicallyScaleGameCanvas() {
             canvas.width = arena.clientWidth * window.devicePixelRatio;
@@ -119,11 +122,12 @@
             dynamicallyScaleGameCanvas();
             overlay.style.display = 'none';
             gameState = "PLAYING"; score = 0; scoreDisplay.innerText = score;
-            steps = []; baseSpeed = 2.4; spawnTimer = 0;
+            steps = []; baseSpeed = 3.8; spawnTimer = 0;
             const currentW = canvas.width / window.devicePixelRatio;
             const currentH = canvas.height / window.devicePixelRatio;
             player.x = currentW / 2; player.targetX = currentW / 2; player.vy = 0; player.y = currentH / 3;
-            steps.push({ x: currentW / 2 - 55, y: currentH / 2, width: 110, height: 12, isTrap: false });
+            // WIDER: Large launch platform so you always start completely safe
+            steps.push({ x: currentW / 2 - 60, y: currentH / 2, width: 120, height: 12, isTrap: false });
             cancelAnimationFrame(animationFrameId);
             gameLoopEngineTick();
         }
@@ -150,9 +154,10 @@
             player.x += (player.targetX - player.x) * 0.25;
             player.vy += 0.28; player.y += player.vy;
 
-            if (spawnTimer % 55 === 0) {
+            // BALANCED: Spawns an endless stream of stairs so you always have a landing target
+            if (spawnTimer % 12 === 0) {
                 let stepWidth = Math.max(70, 95 - score * 0.25);
-                steps.push({ x: Math.random() * (w - stepWidth), y: -15, width: stepWidth, height: 12, isTrap: Math.random() < 0.18 && score > 12 });
+                steps.push({ x: Math.random() * (w - stepWidth), y: -15, width: stepWidth, height: 12, isTrap: Math.random() < 0.15 && score > 15 });
             }
 
             for (let i = steps.length - 1; i >= 0; i--) {
@@ -162,8 +167,8 @@
 
                 if (player.vy > 0 && player.x >= step.x && player.x <= step.x + step.width && player.y + player.radius >= step.y && player.y - player.radius <= step.y + step.height) {
                     if (step.isTrap) { triggerGameOverSequence(); return; }
-                    // FIXED: Re-engineered upward bounce force from -10.5 to -12.5 for massive super-jumps [INDEX]
-                    player.vy = -12.5; player.y = step.y - player.radius; score++; scoreDisplay.innerText = score;
+                    // JUMP HEIGHT: Tuned to a perfect -13 for massive airtime without leaving the field view
+                    player.vy = -13; player.y = step.y - player.radius; score++; scoreDisplay.innerText = score;
                     if (score % 10 === 0) baseSpeed += 0.2;
                 }
                 if (step.y > h) steps.splice(i, 1);
